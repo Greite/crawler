@@ -516,7 +516,7 @@ class Crawler
             return $this;
         }
 
-        if ($this->getCrawlQueue()->has($crawlUrl->url)) {
+        if ($this->getCrawlQueue()->has($crawlUrl)) {
             return $this;
         }
 

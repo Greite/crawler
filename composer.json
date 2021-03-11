@@ -1,5 +1,5 @@
 {
-    "name": "spatie/crawler",
+    "name": "greite/crawler",
     "description": "Crawl all internal links found on a website",
     "keywords": [
         "spatie",
@@ -21,6 +21,7 @@
         "guzzlehttp/psr7": "^1.7",
         "illuminate/collections": "^8.17",
         "nicmart/tree": "^0.3.0",
+        "ramsey/uuid": "^4.1",
         "spatie/browsershot": "^3.14",
         "spatie/robots-txt": "^1.0.9",
         "symfony/dom-crawler": "^5.2"

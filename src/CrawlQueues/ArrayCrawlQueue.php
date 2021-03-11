@@ -12,12 +12,19 @@ class ArrayCrawlQueue implements CrawlQueue
     /**
      * All known URLs, indexed by URL string.
      *
-     * @var CrawlUrl[]
+     * @var CrawlUrl[][]
      */
     protected array $urls = [];
 
     /**
-     * Pending URLs, indexed by URL string.
+     * All known URLs, indexed by URL ID.
+     *
+     * @var CrawlUrl[]
+     */
+    protected array $urlsByID = [];
+
+    /**
+     * Pending URLs, indexed by URL ID.
      *
      * @var CrawlUrl[]
      */
@@ -25,13 +32,14 @@ class ArrayCrawlQueue implements CrawlQueue
 
     public function add(CrawlUrl $crawlUrl): CrawlQueue
     {
-        $urlString = (string) $crawlUrl->url;
+        $urlID = $crawlUrl->getId();
+        $stringUrl = (string)$crawlUrl->url;
+        $urlMarker = !is_null($crawlUrl->foundOnUrl) ? (string)$crawlUrl->foundOnUrl : 0;
 
-        if (! isset($this->urls[$urlString])) {
-            $crawlUrl->setId($urlString);
-
-            $this->urls[$urlString] = $crawlUrl;
-            $this->pendingUrls[$urlString] = $crawlUrl;
+        if (! isset($this->urls[$urlID][$urlMarker])) {
+            $this->urls[$stringUrl][$urlMarker] = $crawlUrl;
+            $this->pendingUrls[$urlID] = $crawlUrl;
+            $this->urlsByID[$urlID] = $crawlUrl;
         }
 
         return $this;
@@ -44,22 +52,24 @@ class ArrayCrawlQueue implements CrawlQueue
 
     public function getUrlById($id): CrawlUrl
     {
-        if (! isset($this->urls[$id])) {
+        if (!isset($this->urlsByID[$id])) {
             throw new UrlNotFoundByIndex("Crawl url {$id} not found in collection.");
         }
 
-        return $this->urls[$id];
+        return $this->urlsByID[$id];
     }
 
     public function hasAlreadyBeenProcessed(CrawlUrl $crawlUrl): bool
     {
-        $urlString = (string) $crawlUrl->url;
+        $urlID = $crawlUrl->getId();
+        $stringUrl = (string)$crawlUrl->url;
+        $urlMarker = !is_null($crawlUrl->foundOnUrl) ? (string)$crawlUrl->foundOnUrl : 0;
 
-        if (isset($this->pendingUrls[$urlString])) {
+        if (isset($this->pendingUrls[$urlID])) {
             return false;
         }
 
-        if (isset($this->urls[$urlString])) {
+        if (isset($this->urls[$stringUrl][$urlMarker])) {
             return true;
         }
 
@@ -68,9 +78,9 @@ class ArrayCrawlQueue implements CrawlQueue
 
     public function markAsProcessed(CrawlUrl $crawlUrl): void
     {
-        $urlString = (string) $crawlUrl->url;
+        $urlID = $crawlUrl->getId();
 
-        unset($this->pendingUrls[$urlString]);
+        unset($this->pendingUrls[$urlID]);
     }
 
     public function getProcessedUrlCount(): int
@@ -79,21 +89,16 @@ class ArrayCrawlQueue implements CrawlQueue
     }
 
     /**
-     * @param CrawlUrl|UriInterface $crawlUrl
+     * @param CrawlUrl $crawlUrl
      *
      * @return bool
      */
-    public function has($crawlUrl): bool
+    public function has(CrawlUrl $crawlUrl): bool
     {
-        if ($crawlUrl instanceof CrawlUrl) {
-            $urlString = (string) $crawlUrl->url;
-        } elseif ($crawlUrl instanceof UriInterface) {
-            $urlString = (string) $crawlUrl;
-        } else {
-            throw InvalidUrl::unexpectedType($crawlUrl);
-        }
+        $stringUrl = (string)$crawlUrl->url;
+        $urlMarker = !is_null($crawlUrl->foundOnUrl) ? (string)$crawlUrl->foundOnUrl : 0;
 
-        return isset($this->urls[$urlString]);
+        return isset($this->urls[$stringUrl][$urlMarker]);
     }
 
     public function getPendingUrl(): ?CrawlUrl

@@ -3,6 +3,7 @@
 namespace Spatie\Crawler;
 
 use Psr\Http\Message\UriInterface;
+use Ramsey\Uuid\Uuid;
 
 class CrawlUrl
 {
@@ -29,6 +30,8 @@ class CrawlUrl
         $this->url = $url;
 
         $this->foundOnUrl = $foundOnUrl;
+
+        $this->id = Uuid::Uuid4()->toString();
     }
 
     /**
@@ -37,10 +40,5 @@ class CrawlUrl
     public function getId()
     {
         return $this->id;
-    }
-
-    public function setId($id)
-    {
-        $this->id = $id;
     }
 }
